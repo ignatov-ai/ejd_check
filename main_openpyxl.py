@@ -1,4 +1,6 @@
+import openpyxl.styles
 from openpyxl import load_workbook
+from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
 
 import datetime
@@ -23,7 +25,7 @@ up_sheet = up_book.active
 for row in up_sheet.iter_rows(values_only=True):
     uchebniy_plan.append(list(row))
 
-print(uchebniy_plan)
+#print(uchebniy_plan)
 
 #######################################################
 #######################################################
@@ -43,10 +45,46 @@ for root, dirs, files in os.walk(current_dir + '\data'):
 # Выводим список имен файлов
 #print(file_list)
 
+# общая книга замечаний
+comment_book = openpyxl.Workbook()
+comment_book_sheet = comment_book.active
+comment_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
+                           'Кол-во оценок', 'Не хватает оценок'])
+comment_book_sheet.column_dimensions['A'].width = 6
+comment_book_sheet.column_dimensions['B'].width = 65
+comment_book_sheet.column_dimensions['C'].width = 40
+comment_book_sheet.column_dimensions['D'].width = 40
+comment_book_sheet.column_dimensions['E'].width = 5
+comment_book_sheet.column_dimensions['F'].width = 5
+comment_book_sheet.column_dimensions['G'].width = 5
+
+first_row = comment_book_sheet["1"]
+for cell in first_row:
+    style = Alignment(text_rotation=90, horizontal='center', vertical='center')
+    cell.alignment = style
+
 # выбирается файл для обработки
 for file in file_list:
     file = file.split('.xlsx')[0]
+
     book = load_workbook("data\\" + file + '.xlsx')
+
+    comment_class_book = openpyxl.Workbook()
+    comment_class_book_sheet = comment_class_book.active
+    comment_class_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
+                               'Кол-во оценок', 'Не хватает оценок'])
+    comment_class_book_sheet.column_dimensions['A'].width = 6
+    comment_class_book_sheet.column_dimensions['B'].width = 65
+    comment_class_book_sheet.column_dimensions['C'].width = 40
+    comment_class_book_sheet.column_dimensions['D'].width = 40
+    comment_class_book_sheet.column_dimensions['E'].width = 5
+    comment_class_book_sheet.column_dimensions['F'].width = 5
+    comment_class_book_sheet.column_dimensions['G'].width = 5
+
+    first_row = comment_class_book_sheet["1"]
+    for cell in first_row:
+        style = Alignment(text_rotation=90, horizontal='center', vertical='center')
+        cell.alignment = style
 
     # получаем список листов
     tabs = book.sheetnames
@@ -84,7 +122,9 @@ for file in file_list:
         # считаем количество учеников на листе
         students_count = 1
         while sheets['A'+str(students_count)].value != '':
+            #print(sheets['A' + str(students_count)].value,students_count)
             students_count += 1
+        #students_count -= 3
 
         # удаляем пустые строки
         sheets.delete_rows(students_count, sheets.max_row)
@@ -132,18 +172,56 @@ for file in file_list:
         #######################################################
 
         up_class_index = uchebniy_plan[0].index(file.lower())
-        print(up_class_index, file.lower())
+        #print(up_class_index, file.lower())
 
         up_lesson_index = 0
         for i in range (len(uchebniy_plan)):
             if uchebniy_plan[i][0] == lesson.lower():
                 up_lesson_index = i
-        print(up_lesson_index, lesson.lower())
+        #print(up_lesson_index, lesson.lower())
 
         up_lesson_nagruzka = uchebniy_plan[up_class_index][up_lesson_index]
-        print(file.lower(), lesson.lower(), up_lesson_nagruzka)
 
+        up_marks_number = up_lesson_nagruzka * 2 + 1
 
+        print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
+
+        for row in range(students_count-3):
+            ch_cell = 'CJ' + str(row+7)
+            fill_cell = sheets[ch_cell]
+            #print(ch_cell, sheets[ch_cell].value)
+            if fill_cell.value >= up_marks_number:
+                fill_cell.fill = PatternFill(fill_type='solid', fgColor="85EB6A")
+            else:
+                fill_cell.fill = PatternFill(fill_type='solid', fgColor="FA7080")
+                # добавляем замечние в файл КЛАССА
+                comment_class_book_sheet.append([file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,
+                                                 fill_cell.value, up_marks_number - fill_cell.value])
+
+                if up_marks_number-fill_cell.value == 1:
+                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
+                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
+                elif up_marks_number - fill_cell.value == 2:
+                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
+                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
+                elif up_marks_number - fill_cell.value == 3:
+                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
+                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
+
+                # добавляем замечние в СВОДНЫЙ ОТЧЕТ
+                comment_book_sheet.append(
+                    [file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,
+                     fill_cell.value, up_marks_number - fill_cell.value])
+
+                if up_marks_number-fill_cell.value == 1:
+                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
+                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
+                elif up_marks_number - fill_cell.value == 2:
+                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
+                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
+                elif up_marks_number - fill_cell.value == 3:
+                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
+                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
 
         #######################################################
         #######################################################
@@ -152,7 +230,11 @@ for file in file_list:
         # ставим дату и время проверки в ячейку B2
         sheets['B4'] = date
 
-        print(sheet_name,'Проверен', date)
+        #print(file, sheet_name, 'Проверен', date)
 
-    book.save('checked/' + file + ' ПРОВЕРЕНО.xlsx')
+    book.save('checked\\' + file + ' ПРОВЕРЕНО.xlsx')
     book.close()
+    comment_class_book.save('comments\\' + file + ' ЗАМЕЧАНИЯ.xlsx')
+    comment_class_book.close()
+    comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК.xlsx')
+    comment_book.close()
