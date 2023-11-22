@@ -1,4 +1,5 @@
 import pandas as pd
+import openpyxl
         
 import warnings
 warnings.simplefilter("ignore")
@@ -12,7 +13,7 @@ for root, dirs, files in os.walk("."):
 ########print(file_list)
         
 #file_list = ['8a-z.xlsx','8b-z.xlsx','8c.xlsx','8ch.xlsx','8e.xlsx','8ja.xlsx','8sh.xlsx','8ndo_samoshilov.xlsx']
-out = open('data/otchet_net_ocenok.csv', 'w')
+out = open('otchet_net_ocenok.csv', 'w')
 out.write('Класс;Предмет;Преподаватель;Ученик\n')
 for file in file_list:
     print(file, end = "")
@@ -38,24 +39,16 @@ for file in file_list:
         part_1 = current_sheet.iloc[0:49,1:19]
         part_2 = current_sheet.iloc[50:99,2:19]
         part_3 = current_sheet.iloc[100:149,2:19]
+        part_4 = current_sheet.iloc[150:199, 2:19]
 
         part_1 = part_1.reset_index(drop=True)
         part_2 = part_2.reset_index(drop=True)
         part_3 = part_3.reset_index(drop=True)
+        part_4 = part_4.reset_index(drop=True)
 
-        current_sheet_data = pd.concat([part_1,part_2,part_3], axis = 1)
+        current_sheet_data = pd.concat([part_1,part_2,part_3,part_4], axis = 1)
         current_sheet_data = current_sheet_data.fillna('')
 
-        '''
-        # create excel writer object
-        writer = pd.ExcelWriter('output.xlsx')
-        # write dataframe to excel
-        all_data.to_excel(writer)
-        # save the excel
-        writer.save()
-
-        '''
-        
         ########print('\n########## '+ sheet + ' ##########')
         ########print('########## '+ predmet[1] + ' ##########')
         ########print('########## '+ teacher[1][:-22] + ' ##########')
