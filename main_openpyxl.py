@@ -1,12 +1,14 @@
 import openpyxl.styles
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
 import datetime
 import os
-
+import sys
+import shutil
 import warnings
+
 warnings.simplefilter("ignore")
 
 marks_str = ['2', '3', '4', '5']
@@ -16,7 +18,7 @@ marks_int = [2, 3, 4, 5]
 #################### Загрузка УП ######################
 #######################################################
 up_file = 'УП'
-up_book = load_workbook("UP\\" + up_file + '.xlsx')
+up_book = load_workbook("up\\" + up_file + '.xlsx')
 
 uchebniy_plan = []
 
@@ -51,9 +53,9 @@ comment_book_sheet = comment_book.active
 comment_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
                            'Кол-во оценок', 'Не хватает оценок'])
 comment_book_sheet.column_dimensions['A'].width = 6
-comment_book_sheet.column_dimensions['B'].width = 65
+comment_book_sheet.column_dimensions['B'].width = 76
 comment_book_sheet.column_dimensions['C'].width = 40
-comment_book_sheet.column_dimensions['D'].width = 40
+comment_book_sheet.column_dimensions['D'].width = 44
 comment_book_sheet.column_dimensions['E'].width = 5
 comment_book_sheet.column_dimensions['F'].width = 5
 comment_book_sheet.column_dimensions['G'].width = 5
@@ -178,13 +180,20 @@ for file in file_list:
         for i in range (len(uchebniy_plan)):
             if uchebniy_plan[i][0] == lesson.lower():
                 up_lesson_index = i
-        #print(up_lesson_index, lesson.lower())
+                print(up_lesson_index, lesson.lower(),uchebniy_plan[up_lesson_index][up_class_index])
+                break
+        if up_lesson_index == 0:
+            print('ПРОВЕРЬТЕ НАЗВАНИЕ ПРЕДМЕТА В УЧЕБНОМ ПЛАНЕ!!!\n'
+                  'НАЗВАНИЕ ДОЛЖНО СОВПАДАТЬС ВЫГРУЗКОЙ ИЗ ЭЖД')
+            sys.exit()
 
-        up_lesson_nagruzka = uchebniy_plan[up_class_index][up_lesson_index]
+        up_lesson_nagruzka = uchebniy_plan[up_lesson_index][up_class_index]
 
         up_marks_number = up_lesson_nagruzka * 2 + 1
+        if up_marks_number > 10:
+            up_marks_number = 9
 
-        print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
+        #print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
 
         for row in range(students_count-3):
             ch_cell = 'CJ' + str(row+7)
@@ -230,11 +239,18 @@ for file in file_list:
         # ставим дату и время проверки в ячейку B2
         sheets['B4'] = date
 
-        #print(file, sheet_name, 'Проверен', date)
+        print(file, ':', lesson, '- Проверен (', date, ')')
 
     book.save('checked\\' + file + ' ПРОВЕРЕНО.xlsx')
     book.close()
+
+    # перемещаем обработанный файл в папку DONE
+    source_file = 'data\\' + file + '.xlsx'
+    destination_folder = 'done\\' + file + '.xlsx'
+    shutil.move(source_file, destination_folder)
+
     comment_class_book.save('comments\\' + file + ' ЗАМЕЧАНИЯ.xlsx')
     comment_class_book.close()
+
     comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК.xlsx')
     comment_book.close()
