@@ -178,13 +178,16 @@ for file in file_list:
         for i in range (len(uchebniy_plan)):
             if uchebniy_plan[i][0] == lesson.lower():
                 up_lesson_index = i
-        #print(up_lesson_index, lesson.lower())
+                break
+        #print(up_lesson_index, lesson.lower(),uchebniy_plan[up_lesson_index][up_class_index])
 
-        up_lesson_nagruzka = uchebniy_plan[up_class_index][up_lesson_index]
+        up_lesson_nagruzka = uchebniy_plan[up_lesson_index][up_class_index]
 
         up_marks_number = up_lesson_nagruzka * 2 + 1
+        if up_marks_number > 10:
+            up_marks_number = 9
 
-        print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
+        #print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
 
         for row in range(students_count-3):
             ch_cell = 'CJ' + str(row+7)
@@ -230,7 +233,7 @@ for file in file_list:
         # ставим дату и время проверки в ячейку B2
         sheets['B4'] = date
 
-        #print(file, sheet_name, 'Проверен', date)
+        print(file, ':', lesson, '- Проверен (', date, ')')
 
     book.save('checked\\' + file + ' ПРОВЕРЕНО.xlsx')
     book.close()
