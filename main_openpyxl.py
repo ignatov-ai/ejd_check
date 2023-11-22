@@ -10,6 +10,25 @@ warnings.simplefilter("ignore")
 marks_str = ['2', '3', '4', '5']
 marks_int = [2, 3, 4, 5]
 
+#######################################################
+#################### Загрузка УП ######################
+#######################################################
+up_file = 'УП'
+up_book = load_workbook("UP\\" + up_file + '.xlsx')
+
+uchebniy_plan = []
+
+up_sheet = up_book.active
+
+for row in up_sheet.iter_rows(values_only=True):
+    uchebniy_plan.append(list(row))
+
+print(uchebniy_plan)
+
+#######################################################
+#######################################################
+#######################################################
+
 # Получаем текущую директорию
 current_dir = os.getcwd()
 
@@ -21,7 +40,6 @@ for root, dirs, files in os.walk(current_dir + '\data'):
     for filename in files:
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
-
 # Выводим список имен файлов
 #print(file_list)
 
@@ -103,13 +121,36 @@ for file in file_list:
             sheets['CK' + str(i)].value = n_count
             i += 1
 
-        # Вставляем учителя и предмет
-        sheets.insert_rows(1, 3)
-        sheets['B1'] = lesson
-        sheets['B2'] = teacher
+        # Вставляем класс, учителя и предмет
+        sheets.insert_rows(1, 4)
+        sheets['B1'] = file
+        sheets['B2'] = lesson
+        sheets['B3'] = teacher
+
+        #######################################################
+        ############ Сравнение кол-ва уроков с УП #############
+        #######################################################
+
+        up_class_index = uchebniy_plan[0].index(file.lower())
+        print(up_class_index, file.lower())
+
+        up_lesson_index = 0
+        for i in range (len(uchebniy_plan)):
+            if uchebniy_plan[i][0] == lesson.lower():
+                up_lesson_index = i
+        print(up_lesson_index, lesson.lower())
+
+        up_lesson_nagruzka = uchebniy_plan[up_class_index][up_lesson_index]
+        print(file.lower(), lesson.lower(), up_lesson_nagruzka)
+
+
+
+        #######################################################
+        #######################################################
+        #######################################################
 
         # ставим дату и время проверки в ячейку B2
-        sheets['B3'] = date
+        sheets['B4'] = date
 
         print(sheet_name,'Проверен', date)
 
