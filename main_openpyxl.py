@@ -7,7 +7,6 @@ import os
 import warnings
 warnings.simplefilter("ignore")
 
-date = datetime.datetime.now()
 marks_str = ['2', '3', '4', '5']
 marks_int = [2, 3, 4, 5]
 
@@ -24,12 +23,11 @@ for root, dirs, files in os.walk(current_dir + '\data'):
             file_list.append(filename)
 
 # Выводим список имен файлов
-print(file_list)
+#print(file_list)
 
 # выбирается файл для обработки
 for file in file_list:
     file = file.split('.xlsx')[0]
-    print(file)
     book = load_workbook("data\\" + file + '.xlsx')
 
     # получаем список листов
@@ -37,6 +35,8 @@ for file in file_list:
 
     # выбирается лист для работы
     for sheet_name in tabs:
+        date = datetime.datetime.now()
+
         sheets = book[sheet_name]
 
         # определяем предмет
