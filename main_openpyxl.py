@@ -8,7 +8,13 @@ marks_str = ['2', '3', '4', '5']
 marks_int = [2, 3, 4, 5]
 
 # выбирается файл для обработки
-book = load_workbook('11 Я тест.xlsx')
+file = '11 Я тест'
+book = load_workbook(file + '.xlsx')
+
+# получаем список листов
+tabs = book.sheetnames
+print(tabs)
+
 
 # выбирается лист для работы
 sheets = book.active
@@ -87,5 +93,5 @@ sheets['B2'] = teacher
 # ставим дату и время проверки в ячейку B2
 sheets['B3'] = date
 
-book.save("primer2.xlsx")
+book.save(file + ' ПРОВЕРЕНО.xlsx')
 book.close()
