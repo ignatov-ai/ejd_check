@@ -12,7 +12,7 @@ for root, dirs, files in os.walk("."):
 ########print(file_list)
         
 #file_list = ['8a-z.xlsx','8b-z.xlsx','8c.xlsx','8ch.xlsx','8e.xlsx','8ja.xlsx','8sh.xlsx','8ndo_samoshilov.xlsx']
-out = open('otchet_net_ocenok.csv','w')
+out = open('data/otchet_net_ocenok.csv', 'w')
 out.write('Класс;Предмет;Преподаватель;Ученик\n')
 for file in file_list:
     print(file, end = "")
