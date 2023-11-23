@@ -144,10 +144,7 @@ for file in file_list:
 
         # добавляем колонку КОЛИЧЕСТВО ОЦЕНОК и КОЛИЧЕСТВО ПРОПУСКОВ и подсчитываем количество оценок и пропусков по каждому учащемуся
         sheets['CJ2'].value = 'Количество оценок'
-        sheets.column_dimensions['CJ'].width = 11
-
         sheets['CK2'].value = 'Количество пропусков'
-        sheets.column_dimensions['CK'].width = 11
 
         i = 3
         for col in sheets.iter_rows(min_col=3, max_col=87, min_row=3, max_row=students_count-1):
@@ -180,7 +177,7 @@ for file in file_list:
         for i in range (len(uchebniy_plan)):
             if uchebniy_plan[i][0] == lesson.lower():
                 up_lesson_index = i
-                print(up_lesson_index, lesson.lower(),uchebniy_plan[up_lesson_index][up_class_index])
+                #print(up_lesson_index, lesson.lower(),uchebniy_plan[up_lesson_index][up_class_index])
                 break
         if up_lesson_index == 0:
             print('ПРОВЕРЬТЕ НАЗВАНИЕ ПРЕДМЕТА В УЧЕБНОМ ПЛАНЕ!!!\n'
@@ -239,15 +236,45 @@ for file in file_list:
         # ставим дату и время проверки в ячейку B2
         sheets['B4'] = date
 
+        # удаление пустых столбцов перед количеством оценок и пропусков
+        i = 87
+        flag = False
+        while True:
+            # Проверка, что столбец не содержит данных
+            column_a = get_column_letter(i)
+
+            for j in range (1,50):
+                if sheets[column_a + str(j)].value not in ['', None]:
+                    #print('Столбец ', column_a,' содержит данные')
+                    flag = True
+                    break
+            if flag:
+                break
+            else:
+                i -= 1
+
+        #print('Смещение с', 87, 'на', 87-i)
+
+        m_range = 'CJ1:CK50'
+        sheets.move_range(m_range, rows=0, cols=-(87-i))
+
+        sheets.column_dimensions[get_column_letter(i + 1)].width = 11
+        sheets.column_dimensions[get_column_letter(i + 2)].width = 11
+
+        for row in sheets.iter_rows():
+            for cell in row:
+                cell.border = None
+                cell.font = None
+
         print(file, ':', lesson, '- Проверен (', date, ')')
 
     book.save('checked\\' + file + ' ПРОВЕРЕНО.xlsx')
     book.close()
 
     # перемещаем обработанный файл в папку DONE
-    source_file = 'data\\' + file + '.xlsx'
-    destination_folder = 'done\\' + file + '.xlsx'
-    shutil.move(source_file, destination_folder)
+    # source_file = 'data\\' + file + '.xlsx'
+    # destination_folder = 'done\\' + file + '.xlsx'
+    # shutil.move(source_file, destination_folder)
 
     comment_class_book.save('comments\\' + file + ' ЗАМЕЧАНИЯ.xlsx')
     comment_class_book.close()
