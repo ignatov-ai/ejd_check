@@ -38,10 +38,12 @@ for root, dirs, files in os.walk(current_dir + '\\class_data'):
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
 # Выводим список имен файлов
-print(file_list)
+# print(file_list)
 
 for file in file_list:
     file = file.split('.xlsx')[0]
+
+    print('Проверяется', file)
 
     avg_book = load_workbook("avg\Отчёт по средним баллам " + file + ' класс..xlsx')
     avg_book_sheet = avg_book.active
@@ -75,7 +77,7 @@ for file in file_list:
         cell.value = cell.value.lower()
 
     for col in range(2, int(avg_book_sheet.max_column) + 1):
-        avg_book_sheet.column_dimensions[get_column_letter(col)].width = 5
+        avg_book_sheet.column_dimensions[get_column_letter(col)].width = 6
 
     # составляем список фамилий и имен с листа средних баллов
     students_indexes = []
@@ -252,9 +254,6 @@ for file in file_list:
                 avg_row_student_id = students_indexes.index(student)
                 avg_row_lesson_id = lessons_indexes.index(lesson)
 
-                #print('В АП1 у', avg_class_data[avg_row_student_id][0], ':', avg_class_data[avg_row_student_id][avg_row_lesson_id+1])
-                #print('В средних баллах', lesson, ': у', student, '( id =', avg_row_student_id+7,'), mark_in_ap =', student_mark_in_ap)
-
                 avg_book_sheet_cell = avg_book_sheet[get_column_letter(avg_row_lesson_id + 2) + str(avg_row_student_id + 7)]
                 if avg_class_data[avg_row_student_id][avg_row_lesson_id+1] == student_mark_in_ap:
                     avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="C0F56E")
@@ -263,27 +262,52 @@ for file in file_list:
                     avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="FF8373")
                     errors += 1
 
-                    print(sheet_name, 'ОШИБКА', student ,avg_class_data[avg_row_student_id][avg_row_lesson_id+1], student_mark_in_ap, lesson)
+                    #print(sheet_name, 'ОШИБКА', student ,avg_class_data[avg_row_student_id][avg_row_lesson_id+1], student_mark_in_ap, lesson)
 
-                # if marks_count < up_marks_number and sheets[period_col + str(row)].value == 'А/З':
-                #     avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="C0F56E")
-
-            except:
-                student = student_all.split()[:2]
                 if sheets[period_col + str(row)].value == 'А/З' or sheets[period_col + str(row)].value == '':
                     print('У', student, 'А/З по предмету', lesson)
 
+            except:
+
+                if sheets[period_col + str(row)].value == 'А/З' or sheets[period_col + str(row)].value == '':
+
+                    student = ' '.join(student_all.split()[:2])
+
+                    try:
+                        avg_row_student_id = students_indexes.index(student)
+                        avg_row_lesson_id = lessons_indexes.index(lesson)
+
+                        avg_book_sheet_cell = avg_book_sheet[get_column_letter(avg_row_lesson_id + 2) + str(avg_row_student_id + 7)]
+
+                        student_marks_count = sheets[get_column_letter(col_max - 1) + str(row)].value
+
+                        # print('У', student, 'А/З по предмету', lesson,
+                        #       'количество оценок =', student_marks_count,
+                        #       'нужно оценок =', up_marks_number,
+                        #       sheets[period_col + str(row)].value,
+                        #       avg_book_sheet_cell.value,
+                        #       avg_book_sheet_cell.coordinate)
+
+                        if (student_marks_count < up_marks_number or sheets[period_col + str(row)].value == 'А/З') and sheets[period_col + str(row)].value == 'А/З':
+                            avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="C0F56E")
+                        else:
+                            avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="FF8373")
+
+                            if sheets[period_col + str(row)].value == '':
+                                avg_book_sheet_cell.value = str(avg_class_data[avg_row_student_id][avg_row_lesson_id+1]) + ' (' + str(sheets[period_col + str(row)].value) + ')'
+
+                    except:
+                        continue
+
                 continue
 
-
-
-
-
-
-    avg_book.save('Средние баллы_' + file + '_ПРОВЕРЕН (' + str(errors) +' - ошибок).xlsx')
+    if errors > 0:
+        avg_book.save('avg_ap_check\\Средние баллы_' + file + '_ПРОВЕРЕН (ЕСТЬ ОШИБКИ).xlsx')
+    else:
+        avg_book.save('avg_ap_check\\Средние баллы_' + file + '_ПРОВЕРЕН.xlsx')
     avg_book.close()
 
-    book.save('Промежуточный_' + file + '_ПРОВЕРЕНО.xlsx')
+    # book.save('Промежуточный_' + file + '_ПРОВЕРЕНО.xlsx')
     book.close()
 
 
