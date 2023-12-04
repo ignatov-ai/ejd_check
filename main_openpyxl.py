@@ -1,4 +1,4 @@
-import openpyxl.styles
+from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
@@ -6,7 +6,6 @@ from openpyxl.utils import get_column_letter
 import datetime
 import os
 import sys
-import shutil
 import warnings
 
 warnings.simplefilter("ignore")
@@ -48,7 +47,7 @@ for root, dirs, files in os.walk(current_dir + '\data'):
 #print(file_list)
 
 # общая книга замечаний
-comment_book = openpyxl.Workbook()
+comment_book = Workbook()
 comment_book_sheet = comment_book.active
 comment_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
                            'Кол-во оценок', 'Не хватает оценок'])

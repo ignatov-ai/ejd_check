@@ -1,3 +1,4 @@
+
 import openpyxl.styles
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Alignment
@@ -224,25 +225,22 @@ for file in file_list:
         row_max = 3
         while sheets['A'+str(row_max)].value != None:
             row_max += 1
-        row_max -= 1
 
-        #print(row_max, lesson)
-
+        # col_max = 100
         # считаем количество непустых столбцов в строке
-        col_max = 100
-        while True:
-            #print(get_column_letter(col_max) + '4', sheets[get_column_letter(col_max) + '4'].value)
-            col_max -= 1
-            if sheets[get_column_letter(col_max) + '4'].value not in [None, '']:
-                break
+        # while True:
+        #     #print(get_column_letter(col_max) + '4', sheets[get_column_letter(col_max) + '4'].value)
+        #     col_max -= 1
+        #     if sheets[get_column_letter(col_max) + '4'].value not in [None, '']:
+        #         break
+        #
+        # print('Последний не пустой столбец', get_column_letter(col_max), sheet_name, 'На этом листе количество столбцов =', col_max)
 
-        #print('Последний не пустой столбец', get_column_letter(col_max), lesson, 'На этом листе количество столбцов =', col_max)
+        # if col_max < 7:
+        #     break
 
-        # пропуск листа, если стоит только АП
-        if col_max < 10:
-            continue
         # проходим по фамилиям на листе журнала класса, не в файле средних баллов!!!
-        for row in range(3, row_max+1):
+        for row in range(3, row_max-3):
             student_all = sheets['B' + str(row)].value
 
             try:
@@ -263,14 +261,14 @@ for file in file_list:
                     avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="FF8373")
                     errors += 1
 
-                    print(sheet_name, 'ОШИБКА', student ,avg_class_data[avg_row_student_id][avg_row_lesson_id+1], student_mark_in_ap, lesson)
+                    print('ОШИБКА', student ,avg_class_data[avg_row_student_id][avg_row_lesson_id+1], student_mark_in_ap, lesson)
 
                 # if marks_count < up_marks_number and sheets[period_col + str(row)].value == 'А/З':
                 #     avg_book_sheet_cell.fill = PatternFill(fill_type='solid', fgColor="C0F56E")
 
             except:
                 student = student_all.split()[:2]
-                if sheets[period_col + str(row)].value == 'А/З' or sheets[period_col + str(row)].value == '':
+                if sheets[period_col + str(row)].value == 'А/З':
                     print('У', student, 'А/З по предмету', lesson)
 
                 continue
