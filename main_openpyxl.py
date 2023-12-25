@@ -45,20 +45,21 @@ for root, dirs, files in os.walk(current_dir + '\data'):
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
 # Выводим список имен файлов
-#print(file_list)
+print(file_list)
 
 # общая книга замечаний
 comment_book = openpyxl.Workbook()
 comment_book_sheet = comment_book.active
-comment_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
+#comment_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок', - убрал столбик Учитель
+comment_book_sheet.append(['Класс', 'Ученик', 'Предмет', 'Минимум оценок',
                            'Кол-во оценок', 'Не хватает оценок'])
 comment_book_sheet.column_dimensions['A'].width = 6
-comment_book_sheet.column_dimensions['B'].width = 76
-comment_book_sheet.column_dimensions['C'].width = 40
-comment_book_sheet.column_dimensions['D'].width = 44
+comment_book_sheet.column_dimensions['B'].width = 50
+comment_book_sheet.column_dimensions['C'].width = 50
+comment_book_sheet.column_dimensions['D'].width = 5
 comment_book_sheet.column_dimensions['E'].width = 5
 comment_book_sheet.column_dimensions['F'].width = 5
-comment_book_sheet.column_dimensions['G'].width = 5
+#comment_book_sheet.column_dimensions['G'].width = 5
 
 first_row = comment_book_sheet["1"]
 for cell in first_row:
@@ -73,15 +74,16 @@ for file in file_list:
 
     comment_class_book = openpyxl.Workbook()
     comment_class_book_sheet = comment_class_book.active
-    comment_class_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок',
+    #comment_class_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок', - убрал столбик Учитель
+    comment_class_book_sheet.append(['Класс', 'Ученик', 'Предмет', 'Минимум оценок',
                                'Кол-во оценок', 'Не хватает оценок'])
     comment_class_book_sheet.column_dimensions['A'].width = 6
-    comment_class_book_sheet.column_dimensions['B'].width = 65
-    comment_class_book_sheet.column_dimensions['C'].width = 40
-    comment_class_book_sheet.column_dimensions['D'].width = 40
+    comment_class_book_sheet.column_dimensions['B'].width = 50
+    comment_class_book_sheet.column_dimensions['C'].width = 50
+    comment_class_book_sheet.column_dimensions['D'].width = 5
     comment_class_book_sheet.column_dimensions['E'].width = 5
     comment_class_book_sheet.column_dimensions['F'].width = 5
-    comment_class_book_sheet.column_dimensions['G'].width = 5
+    #comment_class_book_sheet.column_dimensions['G'].width = 5
 
     first_row = comment_class_book_sheet["1"]
     for cell in first_row:
@@ -93,6 +95,7 @@ for file in file_list:
 
     # выбирается лист для работы
     for sheet_name in tabs:
+        #print(file, sheet_name)
         date = datetime.datetime.now()
 
         sheets = book[sheet_name]
@@ -169,7 +172,6 @@ for file in file_list:
         #######################################################
         ###########  Сравнение кол-ва уроков с УП  ############
         #######################################################
-
         up_class_index = uchebniy_plan[0].index(file.lower())
         #print(up_class_index, file.lower())
 
@@ -181,14 +183,16 @@ for file in file_list:
                 break
         if up_lesson_index == 0:
             print('ПРОВЕРЬТЕ НАЗВАНИЕ ПРЕДМЕТА В УЧЕБНОМ ПЛАНЕ!!!\n'
-                  'НАЗВАНИЕ ДОЛЖНО СОВПАДАТЬС ВЫГРУЗКОЙ ИЗ ЭЖД')
+                  'НАЗВАНИЕ ДОЛЖНО СОВПАДАТЬ С ВЫГРУЗКОЙ ИЗ ЭЖД')
             sys.exit()
 
         up_lesson_nagruzka = uchebniy_plan[up_lesson_index][up_class_index]
 
+        #print(up_lesson_nagruzka)
+
         up_marks_number = up_lesson_nagruzka * 2 + 1
-        if up_marks_number > 10:
-            up_marks_number = 9
+        if up_marks_number > 7:
+            up_marks_number = 7
 
         #print(file.lower(), lesson.lower(), up_lesson_nagruzka, up_marks_number)
 
@@ -196,38 +200,51 @@ for file in file_list:
             ch_cell = 'CJ' + str(row+7)
             fill_cell = sheets[ch_cell]
             #print(ch_cell, sheets[ch_cell].value)
-            if fill_cell.value >= up_marks_number:
-                fill_cell.fill = PatternFill(fill_type='solid', fgColor="85EB6A")
-            else:
-                fill_cell.fill = PatternFill(fill_type='solid', fgColor="FA7080")
-                # добавляем замечние в файл КЛАССА
-                comment_class_book_sheet.append([file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,
-                                                 fill_cell.value, up_marks_number - fill_cell.value])
 
-                if up_marks_number-fill_cell.value == 1:
-                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
-                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
-                elif up_marks_number - fill_cell.value == 2:
-                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
-                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
-                elif up_marks_number - fill_cell.value == 3:
-                    comment_class_book_cell = comment_class_book_sheet['G' + str(len(comment_class_book_sheet['A']))]
-                    comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
+            student_fio = sheets['B' + str(row + 7)].value
 
-                # добавляем замечние в СВОДНЫЙ ОТЧЕТ
-                comment_book_sheet.append(
-                    [file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,
-                     fill_cell.value, up_marks_number - fill_cell.value])
+            #print(student_fio, student_fio[-5:])
+            if student_fio[-5:] != '.2023':
+                if fill_cell.value >= up_marks_number:
+                    fill_cell.fill = PatternFill(fill_type='solid', fgColor="85EB6A")
+                else:
+                    fill_cell.fill = PatternFill(fill_type='solid', fgColor="FA7080")
+                    # добавляем замечние в файл КЛАССА
+                    #comment_class_book_sheet.append([file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,  - убрал столбик Учитель
+                    comment_class_book_sheet.append([file, sheets['B' + str(row + 7)].value, lesson, up_marks_number,
+                                                     fill_cell.value, up_marks_number - fill_cell.value])
 
-                if up_marks_number-fill_cell.value == 1:
-                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
-                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
-                elif up_marks_number - fill_cell.value == 2:
-                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
-                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
-                elif up_marks_number - fill_cell.value == 3:
-                    comment_book_cell = comment_book_sheet['G' + str(len(comment_book_sheet['A']))]
-                    comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
+                    if up_marks_number-fill_cell.value == 1:
+                        comment_class_book_cell = comment_class_book_sheet['F' + str(len(comment_class_book_sheet['A']))]
+                        comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
+                    elif up_marks_number - fill_cell.value == 2:
+                        comment_class_book_cell = comment_class_book_sheet['F' + str(len(comment_class_book_sheet['A']))]
+                        comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
+                    elif up_marks_number - fill_cell.value == 3:
+                        comment_class_book_cell = comment_class_book_sheet['F' + str(len(comment_class_book_sheet['A']))]
+                        comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
+                    elif up_marks_number - fill_cell.value > 3:
+                        comment_class_book_cell = comment_class_book_sheet['F' + str(len(comment_class_book_sheet['A']))]
+                        comment_class_book_cell.fill = PatternFill(fill_type='solid', fgColor="F36149")
+
+                    # добавляем замечние в СВОДНЫЙ ОТЧЕТ
+                    comment_book_sheet.append(
+                    #    [file, lesson, teacher, sheets['B' + str(row + 7)].value, up_marks_number,  - убрал столбик Учитель
+                        [file, sheets['B' + str(row + 7)].value, lesson, up_marks_number,
+                         fill_cell.value, up_marks_number - fill_cell.value])
+
+                    if up_marks_number-fill_cell.value == 1:
+                        comment_book_cell = comment_book_sheet['F' + str(len(comment_book_sheet['A']))]
+                        comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFE697")
+                    elif up_marks_number - fill_cell.value == 2:
+                        comment_book_cell = comment_book_sheet['F' + str(len(comment_book_sheet['A']))]
+                        comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="FFD040")
+                    elif up_marks_number - fill_cell.value == 3:
+                        comment_book_cell = comment_book_sheet['F' + str(len(comment_book_sheet['A']))]
+                        comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="F9A13E")
+                    elif up_marks_number - fill_cell.value > 3:
+                        comment_book_cell = comment_book_sheet['F' + str(len(comment_book_sheet['A']))]
+                        comment_book_cell.fill = PatternFill(fill_type='solid', fgColor="F36149")
 
         #######################################################
         #######################################################
