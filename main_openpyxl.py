@@ -8,6 +8,8 @@ import os
 import sys
 import warnings
 
+#print('Hello ворлд')
+
 warnings.simplefilter("ignore")
 
 marks_str = ['2', '3', '4', '5']
