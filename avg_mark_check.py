@@ -43,7 +43,7 @@ for root, dirs, files in os.walk(current_dir + '\\class_data'):
 for file in file_list:
     file = file.split('.xlsx')[0]
 
-    print('Проверяется', file)
+    print('Проверяется ', file)
 
     avg_book = load_workbook("avg\Отчёт по средним баллам " + file + ' класс..xlsx')
     avg_book_sheet = avg_book.active
