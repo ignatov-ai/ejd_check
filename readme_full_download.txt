@@ -1,0 +1,1 @@
+python C:\Users\ignat\ejd_check\roa_save_jrn_ext.py journals 11-Ц
