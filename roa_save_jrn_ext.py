@@ -60,6 +60,14 @@ import browser_cookie3
 import grab
 from grab import Grab
 
+classes_korp_8 = [  "5-А-З", "5-Б-З", "5-В-З", "5-Д-З", "5-Е-З", "5-З-З", "5-И-З", "5-Л-З", "5-Ф", "5-Ю", "5-Я",
+                    "6-А-З", "6-Б-З", "6-В-З", "6-Д-З", "6-Е-З", "6-З-З", "6-Ю", "6-Я",
+                    "7-А-З", "7-Б-З", "7-В-З", "7-Д-З", "7-Ц", "7-Ч", "7-Ш", "7-Э", "7-Ю", "7-Я",
+                    "8-А-З", "8-Б-З", "8-В-З", "8-Д-З", "8-Ц", "8-Ч", "8-Ш", "8-Э", "8-Ю", "8-Я",
+                    "9-А-З", "9-Б-З", "9-Ц", "9-Ч", "9-Ш", "9-Э", "9-Ю", "9-Я",
+                    "10-Ф", "10-Ц", "10-Ч", "10-Ш", "10-Э", "10-Я",
+                    "11-У", "11-Ц", "11-Ч", "11-Ш"]
+
 # ===============================================================================
 #
 # Сохранение расширенных журналов классов.
@@ -94,7 +102,7 @@ class dn_Auth:
       web = None
       pid = "89152360386" # user profile id
       sid = "" # school id
-      aid = "11" # academic year id
+      aid = "12" # academic year id
       curr_aid = ""
       dict_th = None; dict_subj = None; dict_bld = None; dict_room = None
 
@@ -263,8 +271,9 @@ class dn_Auth:
 
           # Ид текущего учебного года
           start_aid = self.aid
-          self.aid = str(self.web.config["cookies"]["aid"])
-          self.curr_aid = self.aid or "11"
+          # self.aid = str(self.web.config["cookies"]["aid"])
+          self.aid = "12"
+          self.curr_aid = self.aid or "12"
           self.set_aid(start_aid if start_aid else self.curr_aid)
 
           # Определение ид школы
@@ -338,6 +347,9 @@ for cl in dn.web.doc.json:
     if not (0 < class_level < 12): continue
 
     class_name  = cl.get("name", "").upper()
+
+    if class_name not in classes_korp_8: continue
+
     if cl_level:
        if class_level != cl_level: continue
     elif cl_name:
@@ -361,6 +373,8 @@ for cl in dn.web.doc.json:
 
         subj_name = grp.get("subject_name", "").translate(tmap)
 
+        grp_name = grp_name.replace("/","_")
+
         ok = False
         for k in [1,2]:
           try:
@@ -369,7 +383,10 @@ for cl in dn.web.doc.json:
                       "&extended=true&start_at="+ sDate +"&stop_at="+ eDate)
             if (dn.web.doc.code == 200) and (dn.web.doc.download_size > 2000):
                print(grp_name)
-               dn.web.doc.save(path_folder + class_name +" "+ subj_name +"("+ grp_name +").xlsx")
+
+               # dn.web.doc.save(path_folder + ";" + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+               dn.web.doc.save(path_folder + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+
                jrn_count += 1
                ok = True
                break
@@ -377,7 +394,7 @@ for cl in dn.web.doc.json:
             pass
         if not ok:
            grp_fail.append([grp_id, class_name, grp_name, subj_name])
-           grpfail.write(class_name +" "+ subj_name +"("+ grp_name +").xlsx\n")
+           grpfail.write(class_name +";"+ subj_name +";"+ grp_name +".xlsx")
            grpfail.flush()
 
 # Повторяем сохранение "сбойных" журналов

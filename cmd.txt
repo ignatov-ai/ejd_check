@@ -1,0 +1,1 @@
+C:\Users\ignatov.ai\AppData\Local\Programs\Python\Python311\python.exe C:\Users\ignatov.ai\PycharmProjects\EJD_MARK_CHECK\roa_save_jrn_ext.py C:\Users\ignatov.ai\PycharmProjects\EJD_MARK_CHECK\journals 5-У

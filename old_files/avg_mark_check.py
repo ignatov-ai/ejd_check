@@ -3,7 +3,6 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
-import datetime
 import os
 import sys
 import warnings
@@ -38,14 +37,14 @@ for root, dirs, files in os.walk(current_dir + '\\class_data'):
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
 # Выводим список имен файлов
-# print(file_list)
+print(file_list)
 
 for file in file_list:
     file = file.split('.xlsx')[0]
 
-    print('Проверяется ', file)
+    print('Проверяется', file)
 
-    avg_book = load_workbook("avg\Отчёт по средним баллам " + file + ' класс..xlsx')
+    avg_book = load_workbook("class_data\\" + file + ".xlsx")
     avg_book_sheet = avg_book.active
 
     avg_class_data = []
@@ -310,12 +309,6 @@ for file in file_list:
     # book.save('Промежуточный_' + file + '_ПРОВЕРЕНО.xlsx')
     book.close()
 
-
-
-
-
-
-
 #
 #         for row in range(students_count-3):
 #             ch_cell = 'CJ' + str(row+7)
@@ -360,8 +353,6 @@ for file in file_list:
 #
 #         # ставим дату и время проверки в ячейку B2
 #         sheets['B4'] = date
-#
-#
 #
 #     # перемещаем обработанный файл в папку DONE
 #     # source_file = 'data\\' + file + '.xlsx'
