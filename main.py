@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import shutil
 
 from openpyxl import Workbook
 from openpyxl import load_workbook
@@ -30,7 +31,7 @@ def find_data(sheet, search_value):
                 return column, column_number, row
 
     if not found:
-        return 'Значение не найдено'
+        return None, None, None
 
 
 warnings.simplefilter("ignore")
@@ -65,7 +66,8 @@ current_dir = os.getcwd()
 file_list = []
 
 # Перебираем файлы в текущей директории
-for root, dirs, files in os.walk(current_dir + '\\journals'):
+# for root, dirs, files in os.walk(current_dir + '\\journals'):
+for root, dirs, files in os.walk(current_dir + '\\journals_170924'):
     for filename in files:
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
@@ -99,9 +101,10 @@ for file in file_list:
     lesson = file.split(";")[1]
     group = file.split(";")[2]
 
-    book = load_workbook("journals\\" + file + '.xlsx')
-    sheet = book.active
+    print(class_name, lesson, group)
 
+    book = load_workbook("journals_170924\\" + file + '.xlsx')
+    sheet = book.active
 
     # удаляем столбцы с ДЗ
     sheet.delete_cols(20, 23)
@@ -142,14 +145,11 @@ for file in file_list:
                 sheet[ch_range].value = int(sheet[ch_range].value)
 
     # удаление лишних столбцов
-    t1_column, t1_column_number, t1_row = find_data(sheet, "Т1")
-    sheet.delete_cols(t1_column_number)
-    t2_column, t2_column_number, t2_row = find_data(sheet, "Т2")
-    sheet.delete_cols(t2_column_number)
-    t3_column, t3_column_number, t3_row = find_data(sheet, "Т3")
-    sheet.delete_cols(t3_column_number)
-    g_column, g_column_number, g_row = find_data(sheet, "Г")
-    sheet.delete_cols(g_column_number)
+    delete_columns_list = ['Т1', 'Т2', 'Т3', 'М1', 'М2', 'М3', 'М4', 'М5', 'М6', 'П1', 'П2', 'Г', 'Э', 'А']
+    for s in delete_columns_list:
+        del_column, del_column_number, del_row = find_data(sheet, s)
+        if (del_column, del_column_number, del_row) != (None, None, None):
+            sheet.delete_cols(del_column_number)
 
     #подсчет проведенных уроков на данную дату и удаление не нужных столбцов
     lessons_count = 0
@@ -160,11 +160,11 @@ for file in file_list:
 
     now_month = datetime.now().month
     now_day = datetime.now().day
-    print(now_month, now_day)
+    #print(now_month, now_day)
 
     for i in range(2, sheet.max_column+1):
         new_cell_value = sheet[str(get_column_letter(i)) + "2"].value
-        print(new_cell_value)
+        #print(new_cell_value)
 
         if new_cell_value != "" and new_cell_value != None:
             curent_day = int(new_cell_value)
@@ -176,25 +176,50 @@ for file in file_list:
             month_count += 1
             curent_month += 1
 
-        print('месяц:', curent_month, 'день', curent_day)
+        #print('месяц:', curent_month, 'день', curent_day)
 
         if curent_month >= now_month and curent_day >= now_day:
-            print("дальше еще уроков не было")
+            #print("дальше еще уроков не было")
             last_column_index = i + 2 + 1
             break
 
         old_day_value = curent_day
 
-    print(lessons_count)
-    print(month_count)
+    #print(lessons_count)
+    #print(month_count)
 
     sheet.delete_cols(last_column_index, sheet.max_column)
 
+    # МИНИМАЛЬНОЕ КОЛИЧЕСТВО ОТМЕТОК НА ДАННЫЙ МОМЕНТ
+    min_marks_for_now = 1
+
     # подсчет количества оценок по ученикам
+    for row in range(4, sheet.max_row+1):
+        marks_count_for_student = 0
+        current_student = sheet['B' + str(row)].value[:-2]
+        #print(class_name, lesson, current_student, end=": ")
+        for col in range(3, int(sheet.max_column+2)):
+            if sheet[get_column_letter(col) + str(row)].value in marks_int:
+                marks_count_for_student += 1
+        #print(marks_count_for_student)
 
-
-
+        # добавляем замечание о недостаточном количестве отметок у учащегося
+        if marks_count_for_student < min_marks_for_now:
+            comment_book_sheet.append([class_name,
+                                       current_student,
+                                       lesson,
+                                       min_marks_for_now,
+                                       marks_count_for_student,
+                                       min_marks_for_now - marks_count_for_student])
 
     # созранение переработанной книги в data
-    book.save('data\\' + file + '_test.xlsx')
+    #book.save('data\\' + file + '_test.xlsx')
     book.close()
+
+    # перемещаем обработанный файл в папку DONE
+    source_file = 'journals_170924\\' + file + '.xlsx'
+    destination_folder = 'done\\' + file + '.xlsx'
+    shutil.move(source_file, destination_folder)
+
+    comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК.xlsx')
+comment_book.close()
