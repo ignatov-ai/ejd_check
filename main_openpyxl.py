@@ -41,7 +41,7 @@ current_dir = os.getcwd()
 file_list = []
 
 # Перебираем файлы в текущей директории
-for root, dirs, files in os.walk(current_dir + '\data'):
+for root, dirs, files in os.walk(current_dir + '\\data'):
     for filename in files:
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
@@ -73,7 +73,7 @@ for file in file_list:
 
     book = load_workbook("data\\" + file + '.xlsx')
 
-    comment_class_book = openpyxl.Workbook()
+    comment_class_book = Workbook()
     comment_class_book_sheet = comment_class_book.active
     #comment_class_book_sheet.append(['Класс', 'Предмет', 'Учитель', 'Ученик', 'Минимум оценок', - убрал столбик Учитель
     comment_class_book_sheet.append(['Класс', 'Ученик', 'Предмет', 'Минимум оценок',
