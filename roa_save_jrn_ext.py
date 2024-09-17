@@ -94,7 +94,7 @@ class dn_Auth:
       web = None
       pid = "89152360386" # user profile id
       sid = "" # school id
-      aid = "11" # academic year id
+      aid = "12" # academic year id
       curr_aid = ""
       dict_th = None; dict_subj = None; dict_bld = None; dict_room = None
 
@@ -263,8 +263,9 @@ class dn_Auth:
 
           # Ид текущего учебного года
           start_aid = self.aid
-          self.aid = str(self.web.config["cookies"]["aid"])
-          self.curr_aid = self.aid or "11"
+          # self.aid = str(self.web.config["cookies"]["aid"])
+          self.aid = "12"
+          self.curr_aid = self.aid or "12"
           self.set_aid(start_aid if start_aid else self.curr_aid)
 
           # Определение ид школы
@@ -361,6 +362,8 @@ for cl in dn.web.doc.json:
 
         subj_name = grp.get("subject_name", "").translate(tmap)
 
+        grp_name = grp_name.replace("/","_")
+
         ok = False
         for k in [1,2]:
           try:
@@ -369,7 +372,10 @@ for cl in dn.web.doc.json:
                       "&extended=true&start_at="+ sDate +"&stop_at="+ eDate)
             if (dn.web.doc.code == 200) and (dn.web.doc.download_size > 2000):
                print(grp_name)
-               dn.web.doc.save(path_folder + class_name +" "+ subj_name +"("+ grp_name +").xlsx")
+
+               # dn.web.doc.save(path_folder + ";" + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+               dn.web.doc.save(path_folder + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+
                jrn_count += 1
                ok = True
                break
@@ -377,7 +383,7 @@ for cl in dn.web.doc.json:
             pass
         if not ok:
            grp_fail.append([grp_id, class_name, grp_name, subj_name])
-           grpfail.write(class_name +" "+ subj_name +"("+ grp_name +").xlsx\n")
+           grpfail.write(class_name +";"+ subj_name +";"+ grp_name +".xlsx")
            grpfail.flush()
 
 # Повторяем сохранение "сбойных" журналов
