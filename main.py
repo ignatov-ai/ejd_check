@@ -66,8 +66,8 @@ current_dir = os.getcwd()
 file_list = []
 
 # Перебираем файлы в текущей директории
-# for root, dirs, files in os.walk(current_dir + '\\journals'):
-for root, dirs, files in os.walk(current_dir + '\\journals_170924'):
+for root, dirs, files in os.walk(current_dir + '\\journals'):
+#for root, dirs, files in os.walk(current_dir + '\\journals_170924'):
     for filename in files:
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
@@ -103,13 +103,18 @@ for file in file_list:
 
     print(class_name, lesson, group)
 
-    book = load_workbook("journals_170924\\" + file + '.xlsx')
+    #######################################################################################
+    ####################  Прокерка журналов на выставление отметок  #######################
+    #######################################################################################
+
+    # книга для проверки отметок
+    book = load_workbook("journals\\" + file + '.xlsx')
     sheet = book.active
 
     # удаляем столбцы с ДЗ
     sheet.delete_cols(20, 23)
 
-    # получаем список объединенных диапазонов и разъединяем объединенные ячейки
+       # получаем список объединенных диапазонов и разъединяем объединенные ячейки в книге ОТМЕТОК
     merged_cells = list(map(str, sheet.merged_cells.ranges))
 
     for item in merged_cells:
@@ -133,7 +138,7 @@ for file in file_list:
     # удаляем пустые строки
     sheet.delete_rows(students_count, sheet.max_row)
 
-    # зменяем ширину всех столбцов с оценками
+    # заменяем ширину всех столбцов с оценками
     for i in range(3, int(sheet.max_column)):
         sheet.column_dimensions[get_column_letter(i)].width = 2
 
@@ -213,13 +218,81 @@ for file in file_list:
                                        min_marks_for_now - marks_count_for_student])
 
     # созранение переработанной книги в data
-    #book.save('data\\' + file + '_test.xlsx')
+    #book.save('data\\' + file + '_marks.xlsx')
     book.close()
 
     # перемещаем обработанный файл в папку DONE
-    source_file = 'journals_170924\\' + file + '.xlsx'
-    destination_folder = 'done\\' + file + '.xlsx'
-    shutil.move(source_file, destination_folder)
+    # source_file = 'journals_170924\\' + file + '.xlsx'
+    # destination_folder = 'done\\' + file + '.xlsx'
+    # shutil.move(source_file, destination_folder)
 
     comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК.xlsx')
+
+    #######################################################################################
+    #########################  Прокерка журналов на КТП И ДЗ  #############################
+    #######################################################################################
+
+    # книга для проверки ДЗ и КТП
+    book_dz = load_workbook("journals\\" + file + '.xlsx')
+    sheet_dz = book_dz.active
+
+    # получаем список объединенных диапазонов и разъединяем объединенные ячейки в книге ДЗ и КТП
+    merged_cells = list(map(str, sheet_dz.merged_cells.ranges))
+
+    for item in merged_cells:
+        try:
+            sheet_dz.unmerge_cells(item)
+        except KeyError:
+            continue
+
+    # удаляем столбцы с отметками
+    sheet_dz.delete_cols(1, 20)
+    sheet_dz.delete_cols(4, 25)
+
+    # удаляем пустые строки delete_rows(первая строка, количество строк после)
+    for row in reversed(range(1, sheet_dz.max_row)):
+        sum = 0
+        for col in range(1, 4):
+            cell = sheet_dz[get_column_letter(col) + str(row)].value
+            if cell is None or cell == "":
+                sum += 1
+        if sum == 3:
+            sheet_dz.delete_rows(row, 1)
+
+    # удаляем ЛИШНИЕ СТРОКИ С ДОП ИНФОРМАЦИЕЙ delete_rows(первая строка, количество строк после)
+    for row in reversed(range(1, sheet_dz.max_row)):
+        cell = sheet_dz['A' + str(row)].value
+        if len(cell) > 5 or cell == 'Дата':
+            sheet_dz.delete_rows(row, 1)
+
+    # форматируем книгу с ДЗ и КТП
+    sheet_dz.column_dimensions['A'].width = 10
+    sheet_dz.column_dimensions['B'].width = 70
+    sheet_dz.column_dimensions['C'].width = 70
+
+    # считаем количество уроков "БЕЗ ТЕМЫ"
+    wo_ktp_count = 0
+    wo_dz_count = 0
+    for row in range(1, sheet_dz.max_row):
+        cell_ktp = sheet_dz['B' + str(row)].value
+        if cell_ktp == 'Без темы':
+            wo_ktp_count += 1
+
+        cell_dz = sheet_dz['C' + str(row)].value
+        if cell_dz == 'не задано':
+            wo_dz_count += 1
+    if wo_ktp_count > 0:
+        print('замечание в журнал')
+
+    print(class_name, lesson, group, 'нет тем уроков:', wo_ktp_count, 'из:', sheet_dz.max_row-1,
+                                         '| Задано ДЗ:', sheet_dz.max_row-1-wo_dz_count, 'из:', sheet_dz.max_row-1)
+
+    book_dz.save('data\\' + file + '_dz_ktp.xlsx')
+    book_dz.close()
+
+
+
+
+
+
 comment_book.close()
