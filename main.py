@@ -42,24 +42,23 @@ marks_int = [2, 3, 4, 5]
 start_time = datetime.now()
 
 # параллели для проверки
-grade = "0"
+grade = "9-11"
 # папка с журналами
-# journals_folder = "journals_180924\\" + grade
-journals_folder = "journals\\"
+journals_folder = "journals_180924\\" + grade
+# journals_folder = "journals\\"
 
 #######################################################
 #################### Загрузка УП ######################
 #######################################################
-up_file = 'УП'
-up_book = load_workbook("up\\" + up_file + '.xlsx')
-
-uchebniy_plan = []
-
-up_sheet = up_book.active
-
-for row in up_sheet.iter_rows(values_only=True):
-    uchebniy_plan.append(list(row))
-
+# up_file = 'УП'
+# up_book = load_workbook("up\\" + up_file + '.xlsx')
+#
+# uchebniy_plan = []
+#
+# up_sheet = up_book.active
+#
+# for row in up_sheet.iter_rows(values_only=True):
+#     uchebniy_plan.append(list(row))
 #print(uchebniy_plan)
 
 #######################################################
@@ -166,11 +165,12 @@ for file in file_list:
     if sheet['A' + str(students_count)].value == "Нет оценок":
         continue
 
-    while sheet['A'+str(students_count)].value != '' and sheet['A'+str(students_count)].value is not None:
+    while sheet['A'+str(students_count)].value != '':
         # print(class_name, lesson, "(", sheet['A' + str(students_count)].value, ")", students_count)
         students_count += 1
 
     #students_count -= 3
+    # print(students_count)
 
     # удаляем пустые строки
     sheet.delete_rows(students_count, sheet.max_row)
@@ -199,16 +199,16 @@ for file in file_list:
     old_day_value = 0
     curent_month = 9
     curent_day = 0
-    last_column_index = 0
+    last_column_index = 1
 
     now_month = datetime.now().month
     now_day = datetime.now().day
-    #print(now_month, now_day)
+    # print(now_month, now_day)
 
 
     for i in range(2, sheet.max_column+1):
         new_cell_value = sheet[str(get_column_letter(i)) + "2"].value
-        print(new_cell_value)
+        # print(new_cell_value)
 
         if new_cell_value != "" and new_cell_value is not None:
             curent_day = int(new_cell_value)
@@ -229,10 +229,14 @@ for file in file_list:
 
         old_day_value = curent_day
 
-    print(lessons_count)
-    print(month_count)
+    # print(lessons_count)
+    # print(month_count)
 
-    sheet.delete_cols(last_column_index, sheet.max_column)
+    # sheet.delete_cols(last_column_index, sheet.max_column)
+
+    # сохранение переработанной книги в data
+    # book.save('data\\' + file + '_marks.xlsx')
+    book.close()
 
     # МИНИМАЛЬНОЕ КОЛИЧЕСТВО ОТМЕТОК НА ДАННЫЙ МОМЕНТ
     min_marks_for_now = 1
@@ -240,7 +244,7 @@ for file in file_list:
     # подсчет количества оценок по ученикам
     for row in range(4, sheet.max_row+1):
         marks_count_for_student = 0
-        current_student = sheet['A' + str(row)].value[:-2]
+        current_student = sheet['B' + str(row)].value[:-2]
         print(class_name, lesson, current_student, end=": ")
         for col in range(3, int(sheet.max_column+2)):
             if sheet[get_column_letter(col) + str(row)].value in marks_int:
@@ -256,9 +260,7 @@ for file in file_list:
                                        marks_count_for_student,
                                        min_marks_for_now - marks_count_for_student])
 
-    # созранение переработанной книги в data
-    book.save('data\\' + file + '_marks.xlsx')
-    book.close()
+
 
     comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК ' + grade + '.xlsx')
 
