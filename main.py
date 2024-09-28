@@ -42,10 +42,18 @@ marks_int = [2, 3, 4, 5]
 start_time = datetime.now()
 
 # параллели для проверки
-grade = "9-11"
+grade = "5-8"
 # папка с журналами
-journals_folder = "journals_180924\\" + grade
+journals_folder = "journals_280924\\" + grade
 # journals_folder = "journals\\"
+
+classes_korp_8 = [  "5-А-З", "5-Б-З", "5-В-З", "5-Д-З", "5-Е-З", "5-З-З", "5-И-З", "5-Л-З", "5-Ф", "5-Ю", "5-Я",
+                    "6-А-З", "6-Б-З", "6-В-З", "6-Д-З", "6-Е-З", "6-З-З", "6-Ю", "6-Я",
+                    "7-А-З", "7-Б-З", "7-В-З", "7-Д-З", "7-Ц", "7-Ч", "7-Ш", "7-Э", "7-Ю", "7-Я",
+                    "8-А-З", "8-Б-З", "8-В-З", "8-Д-З", "8-Ц", "8-Ч", "8-Ш", "8-Э", "8-Ю", "8-Я",
+                    "9-А-З", "9-Б-З", "9-Ц", "9-Ч", "9-Ш", "9-Э", "9-Ю", "9-Я",
+                    "10-Ф", "10-Ц", "10-Ч", "10-Ш", "10-Э", "10-Я",
+                    "11-У", "11-Ц", "11-Ч", "11-Ш"]
 
 #######################################################
 #################### Загрузка УП ######################
@@ -75,6 +83,9 @@ file_list = []
 # for root, dirs, files in os.walk(current_dir + '\\journals'):
 for root, dirs, files in os.walk(current_dir + '\\' + journals_folder):
     for filename in files:
+        for file_name_part in classes_korp_8:   # фильтр классов по корпусу 8
+            if file_name_part not in filename:  # фильтр классов по корпусу 8
+                continue                        # фильтр классов по корпусу 8
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
 # Выводим список имен файлов
@@ -245,7 +256,7 @@ for file in file_list:
     for row in range(4, sheet.max_row+1):
         marks_count_for_student = 0
         current_student = sheet['B' + str(row)].value[:-2]
-        print(class_name, lesson, current_student, end=": ")
+        # print(class_name, lesson, current_student, end=": ")
         for col in range(3, int(sheet.max_column+2)):
             if sheet[get_column_letter(col) + str(row)].value in marks_int:
                 marks_count_for_student += 1
@@ -338,6 +349,7 @@ for file in file_list:
     # shutil.move(source_file, destination_folder)
 end_time = datetime.now()
 
+print()
 print(start_time, end_time)
 
 comment_book.close()
