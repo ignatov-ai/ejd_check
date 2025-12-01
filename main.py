@@ -42,9 +42,10 @@ marks_int = [2, 3, 4, 5]
 start_time = datetime.now()
 
 # параллели для проверки
-grade = "5-8"
+grade = "test"
+data_date = "281124"
 # папка с журналами
-journals_folder = "journals_280924\\" + grade
+journals_folder = "journals_" + data_date + "\\" + grade
 # journals_folder = "journals\\"
 
 classes_korp_8 = [  "5-А-З", "5-Б-З", "5-В-З", "5-Д-З", "5-Е-З", "5-З-З", "5-И-З", "5-Л-З", "5-Ф", "5-Ю", "5-Я",
@@ -83,13 +84,19 @@ file_list = []
 # for root, dirs, files in os.walk(current_dir + '\\journals'):
 for root, dirs, files in os.walk(current_dir + '\\' + journals_folder):
     for filename in files:
-        for file_name_part in classes_korp_8:   # фильтр классов по корпусу 8
-            if file_name_part not in filename:  # фильтр классов по корпусу 8
-                continue                        # фильтр классов по корпусу 8
+        # for file_name_part in classes_korp_8:   # фильтр классов по корпусу 8
+        #     if file_name_part not in filename:  # фильтр классов по корпусу 8
+        #         continue                        # фильтр классов по корпусу 8
         if filename[-5:] == '.xlsx':
             file_list.append(filename)
 # Выводим список имен файлов
 # print(file_list)
+
+# книга замечаний по ОТМЕТКАМ
+log_book = Workbook()
+log_book_sheet = log_book.active
+log_book_sheet.append(['имя файла'])
+log_book_sheet.column_dimensions['A'].width = 100
 
 # книга замечаний по ОТМЕТКАМ
 comment_book = Workbook()
@@ -137,12 +144,22 @@ for cell in first_row:
 # выбирается файл для обработки
 for file in file_list:
     file = file.split('.xlsx')[0]
+    print(file, " | ", end="")
 
-    class_name = file.split(";")[0]
-    lesson = file.split(";")[1]
-    group = file.split(";")[2]
+    journal_data = file.split(";")
 
-    print(class_name, lesson, group)
+    print(len(journal_data))
+
+    if len(journal_data) != 3:
+        log_book_sheet.append([file + ".xlsx"])
+        log_book.save('comments\LOG ' + grade + ' ' + data_date + '.xlsx')
+        continue
+
+    class_name = journal_data[0]
+    lesson = journal_data[1]
+    group = journal_data[2]
+
+    # print(class_name, lesson, group)
 
     #######################################################################################
     ####################  Проверка журналов на выставление отметок  #######################
@@ -179,6 +196,8 @@ for file in file_list:
     while sheet['A'+str(students_count)].value != '':
         # print(class_name, lesson, "(", sheet['A' + str(students_count)].value, ")", students_count)
         students_count += 1
+        if students_count > 50:
+            break
 
     #students_count -= 3
     # print(students_count)
@@ -246,7 +265,7 @@ for file in file_list:
     # sheet.delete_cols(last_column_index, sheet.max_column)
 
     # сохранение переработанной книги в data
-    # book.save('data\\' + file + '_marks.xlsx')
+    book.save('data\\' + file + '_marks.xlsx')
     book.close()
 
     # МИНИМАЛЬНОЕ КОЛИЧЕСТВО ОТМЕТОК НА ДАННЫЙ МОМЕНТ
@@ -256,24 +275,32 @@ for file in file_list:
     for row in range(4, sheet.max_row+1):
         marks_count_for_student = 0
         current_student = sheet['B' + str(row)].value[:-2]
-        # print(class_name, lesson, current_student, end=": ")
+        # print(class_name, lesson, current_student)
         for col in range(3, int(sheet.max_column+2)):
             if sheet[get_column_letter(col) + str(row)].value in marks_int:
                 marks_count_for_student += 1
         # print(marks_count_for_student)
 
         # добавляем замечание о недостаточном количестве отметок у учащегося
-        if marks_count_for_student < min_marks_for_now:
-            comment_book_sheet.append([class_name,
-                                       current_student,
-                                       lesson,
-                                       min_marks_for_now,
-                                       marks_count_for_student,
-                                       min_marks_for_now - marks_count_for_student])
+        # if marks_count_for_student < min_marks_for_now:
+        #     comment_book_sheet.append([class_name,
+        #                                current_student,
+        #                                lesson,
+        #                                min_marks_for_now,
+        #                                marks_count_for_student,
+        #                                min_marks_for_now - marks_count_for_student])
+
+        # добавляем количество отметок у любого учащегося
+        comment_book_sheet.append([class_name,
+                                   current_student,
+                                   lesson,
+                                   min_marks_for_now,
+                                   marks_count_for_student,
+                                   min_marks_for_now - marks_count_for_student])
 
 
 
-    comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК ' + grade + '.xlsx')
+    comment_book.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ НАКОПЛЯЕМОСТИ ОЦЕНОК ' + grade + ' ' + data_date + '.xlsx')
 
     #######################################################################################
     #########################  Прокерка журналов на КТП И ДЗ  #############################
@@ -341,8 +368,9 @@ for file in file_list:
 
     # book_dz.save('data\\' + file + '_dz_ktp.xlsx')
     book_dz.close()
-    comment_book_dz_ktp.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ ДЗ И КТП ' + grade + '.xlsx')
+    comment_book_dz_ktp.save('comments\ВСЕ ЗАМЕЧАНИЯ ПО ПРОВЕРКЕ ДЗ И КТП ' + grade + ' ' + data_date + '.xlsx')
 
+    log_book.close()
     # перемещаем обработанный файл в папку DONE
     # source_file = 'journals\\' + file + '.xlsx'
     # destination_folder = 'done\\' + file + '.xlsx'
