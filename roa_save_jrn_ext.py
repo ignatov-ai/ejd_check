@@ -350,7 +350,7 @@ for cl in dn.web.doc.json:
     class_name  = cl.get("name", "").upper()
 
     # скачивание только классов корпуса №8
-    # if class_name not in classes_korp_8: continue
+    if class_name not in classes_korp_8: continue
 
     if cl_level:
        if class_level != cl_level: continue
