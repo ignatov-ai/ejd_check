@@ -60,13 +60,13 @@ import browser_cookie3
 import grab
 from grab import Grab
 
-classes_korp_8 = [  "5-А-З", "5-Б-З", "5-В-З", "5-Д-З", "5-Е-З", "5-З-З", "5-И-З", "5-Л-З", "5-Ф", "5-Ю", "5-Я",
-                    "6-А-З", "6-Б-З", "6-В-З", "6-Д-З", "6-Е-З", "6-З-З", "6-Ю", "6-Я",
+classes_korp_8 = [  "5-А-З", "5-Б-З", "5-В-З", "5-Д-З", "5-Е-З", "5-З-З", "5-И-З", "5-К-З", "5-Л-З", "5-М-З", "5-Ю", "5-Я",
+                    "6-А-З", "6-Б-З", "6-В-З", "6-Д-З", "6-Е-З", "6-З-З", "6-И-З", "6-Л-З", "6-Ф", "6-Ю", "6-Я",
                     "7-А-З", "7-Б-З", "7-В-З", "7-Д-З", "7-Ц", "7-Ч", "7-Ш", "7-Э", "7-Ю", "7-Я",
                     "8-А-З", "8-Б-З", "8-В-З", "8-Д-З", "8-Ц", "8-Ч", "8-Ш", "8-Э", "8-Ю", "8-Я",
-                    "9-А-З", "9-Б-З", "9-Ц", "9-Ч", "9-Ш", "9-Э", "9-Ю", "9-Я",
+                    "9-А-З", "9-Б-З", "9-В-З", "9-Д-З", "9-Ц", "9-Ч", "9-Ш", "9-Э", "9-Ю", "9-Я",
                     "10-Ф", "10-Ц", "10-Ч", "10-Ш", "10-Э", "10-Я",
-                    "11-У", "11-Ц", "11-Ч", "11-Ш"]
+                    "11-Ф", "11-Ц", "11-Ч", "11-Ш", "11-Э", "11-Я"]
 
 # ===============================================================================
 #
@@ -100,9 +100,10 @@ class dn_Auth:
 
       domain = ""; base = ""
       web = None
-      pid = "89152360386" # user profile id
+      # pid = "89152360386" # user profile id
+      pid = "ignatov-ai@yandex.ru" # user profile id
       sid = "" # school id
-      aid = "12" # academic year id
+      aid = "13" # academic year id
       curr_aid = ""
       dict_th = None; dict_subj = None; dict_bld = None; dict_room = None
 
@@ -272,8 +273,8 @@ class dn_Auth:
           # Ид текущего учебного года
           start_aid = self.aid
           # self.aid = str(self.web.config["cookies"]["aid"])
-          self.aid = "12"
-          self.curr_aid = self.aid or "12"
+          self.aid = "13"
+          self.curr_aid = self.aid or "13"
           self.set_aid(start_aid if start_aid else self.curr_aid)
 
           # Определение ид школы
@@ -348,6 +349,7 @@ for cl in dn.web.doc.json:
 
     class_name  = cl.get("name", "").upper()
 
+    # скачивание только классов корпуса №8
     if class_name not in classes_korp_8: continue
 
     if cl_level:
@@ -371,7 +373,7 @@ for cl in dn.web.doc.json:
         grp_name  = grp.get("name", "")
         if (not grp_id) or (not grp_name): continue
 
-        subj_name = grp.get("subject_name", "").translate(tmap)
+        subj_name = str(grp.get("subject_name", "")).translate(tmap)
 
         grp_name = grp_name.replace("/","_")
 
@@ -385,7 +387,7 @@ for cl in dn.web.doc.json:
                print(grp_name)
 
                # dn.web.doc.save(path_folder + ";" + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
-               dn.web.doc.save(path_folder + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+               dn.web.doc.save(path_folder + "\\" + str(class_level) + "\\" + class_name +";"+ subj_name +";"+ grp_name +".xlsx")
 
                jrn_count += 1
                ok = True
@@ -394,7 +396,7 @@ for cl in dn.web.doc.json:
             pass
         if not ok:
            grp_fail.append([grp_id, class_name, grp_name, subj_name])
-           grpfail.write(class_name +";"+ subj_name +";"+ grp_name +".xlsx")
+           grpfail.write(str(class_level) + "\\" + class_name + ";" + subj_name + ";" + grp_name + ".xlsx")
            grpfail.flush()
 
 # Повторяем сохранение "сбойных" журналов
@@ -411,7 +413,7 @@ for i in range(len(grp_fail)-1,-1,-1):
                   "&extended=true&start_at="+ sDate +"&stop_at="+ eDate)
         if (dn.web.doc.code == 200) and (dn.web.doc.download_size > 2000):
            print(grp_fail[i][2])
-           dn.web.doc.save(path_folder + grp_fail[i][1] +" "+ grp_fail[i][3] +"("+ grp_fail[i][2] +").xlsx")
+           dn.web.doc.save(path_folder + "\\" + str(class_level) + "\\" + grp_fail[i][1] + " " + grp_fail[i][3] + "(" + grp_fail[i][2] + ").xlsx")
            jrn_count += 1
            del(grp_fail[i])
            ok = True
@@ -441,11 +443,3 @@ if not jrn_count:
    exit(-100)
 else:
    print("Скачано журналов: "+ str(jrn_count))
-   err = 0
-   if not cl_level and not len(cl_name):
-      err = zipFiles(path_folder, "jrn_ext_"+ time.strftime("%y-%m-%d") +".zip", True)
-      if err < 0:
-         print("Ошибка создания архива "+ str(err))
-      else:
-         err = 0
-   exit(err)
